@@ -216,7 +216,7 @@ stages:
       - bash: |
           set -e
           sudo apt-get update
-          sudo apt-get install -y xvfb metacity
+          sudo apt-get install -y xvfb metacity libgconf-2-4
           sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
           sudo chmod +x /etc/init.d/xvfb
           sudo update-rc.d xvfb defaults
@@ -252,13 +252,12 @@ stages:
           jdkVersionOption: $(JDKVersion)
           mavenOptions: $(MAVEN_OPTS)
       - publish: $(Build.Repository.LocalPath)/its/org.sonarlint.eclipse.its/target/output
-        artifact: ITCaptureScreenshotAndConsole
+        displayName: Store IT screenshots as build artifact
+        artifact: 'ITCaptureScreenshotAndConsole_$(TARGET_PLATFORM)'
         condition: failed()
-      - task: PublishBuildArtifacts@1
+      - publish: '$(Agent.BuildDirectory)/it-coverage.exec'
         displayName: Store coverage report as build artifact
-        inputs:
-          pathtoPublish: '$(Agent.BuildDirectory)/it-coverage.exec'
-          artifactName: 'ITCoverage_$(TARGET_PLATFORM)'
+        artifact: 'ITCoverage_$(TARGET_PLATFORM)'
       - bash: git checkout .
         name: revertPomChanges
         displayName: Revert changes made to pom.xml to not break cache feature
